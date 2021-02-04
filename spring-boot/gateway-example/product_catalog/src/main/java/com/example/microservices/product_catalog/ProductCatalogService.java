@@ -1,10 +1,9 @@
 package com.example.microservices.product_catalog;
 
+import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,26 +14,31 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class ProductCatalogService {
-    
-    @Autowired
-    private MongoTemplate mongoTemplate;
 
     @Value("${server.port}")
     String serverPort;
 
+    private static ArrayList<Product> mongoTemplate = new ArrayList<Product>();
+    
     @PostMapping("/product")
     public Product addProduct(@RequestBody Product product){
-        return mongoTemplate.insert(product);
+        return product;
     }
 
     @PutMapping("/product")
     public Product updateProduct(@RequestBody Product product){
-        return mongoTemplate.save(product);        
+        mongoTemplate.add(product);      
+        return product;
     }
 
     @GetMapping("/product/{id}")
     public Product getProductDetails(@PathVariable  String id){
-        return mongoTemplate.findById(id,Product.class);
+	for(Product p : mongoTemplate) {
+	    if(p.getId().equalsIgnoreCase(id)) {
+		return p;
+	    }
+	}
+	return new Product();
     }
 
 
@@ -49,7 +53,7 @@ public class ProductCatalogService {
 
     @GetMapping("/product")
     public List<Product> getProductList(){
-        return mongoTemplate.findAll(Product.class);
+        return mongoTemplate;
     }
 
     @GetMapping("/product/version")
